@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const { uuid } = require("uuidv4");
-
 const app = express();
 
 app.use(express.json());
@@ -32,12 +31,10 @@ function preventLikes (request, response, next) {
 app.put("/repositories/:id", preventLikes, (request, response) => {
   const { id } = request.params;
   const { title, url, techs } = request.body;
-
   const repoIdx = repositories.findIndex(repository => repository.id === id);
         if ( repoIdx < 0) {
             return response.status(400).json({ error: 'Repository not found' });
         }
-
   const repo = { id, title, url, techs }
   repositories[repoIdx] = repo;
   return response.json(repo);
@@ -45,30 +42,19 @@ app.put("/repositories/:id", preventLikes, (request, response) => {
 
 app.delete("/repositories/:id", (request, response) => {
   const { id } = request.params;
-
   const repoIdx = repositories.findIndex(repo => repo.id === id);
-
       if ( repoIdx < 0) {
           return response.status(400).json({ error: 'Repository not found' });
       }
-    
   repositories.splice(repoIdx,1);
   return response.status(204).send();
 });
 
 app.post("/repositories/:id/like", (request, response) => {
-  const { id } = request.params;
-
-  const repoIdx = repositories.findIndex(repo => repo.id === id);
-      if ( repoIdx < 0) {
-          return response.status(400).json({ error: 'Repository not found' });
-      }
-
-  const repository = repositories.find( repository => repository.id === id );
-  
-  repository.likes += 1;
-
-  return response.json(repository);
+  const repo = repositories.find( repository => repository.id === request.params.id );
+  if (!repo) response.status(400).send({ error: 'Repository not found' });
+  repo.likes += 1;
+  return response.json(repo);
 });
 
 module.exports = app;
